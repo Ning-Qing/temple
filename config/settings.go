@@ -2,15 +2,31 @@ package config
 
 import (
 	"encoding/json"
-)
-
-var (
-	GlobalSettings *Settings
+	"sync"
 )
 
 type Settings struct {
+	lock   *sync.RWMutex
 	Server ServerSetting `json:"server"`
 	Log    LogSetting    `json:"log"`
+}
+
+func (s *Settings) GetServerHost() string {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return s.Server.Host
+}
+
+func (s *Settings) GetServerPort() string {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return s.Server.Port
+}
+
+func (s *Settings) GetServerMode() string {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	return s.Server.Mode
 }
 
 func (s *Settings) String() string {
@@ -27,3 +43,9 @@ type ServerSetting struct {
 type LogSetting struct {
 	Level string `json:"level"`
 }
+
+var (
+	DefaultHost = ""
+	DefaultPort = 8080
+	DefaultMode = "debug"
+)

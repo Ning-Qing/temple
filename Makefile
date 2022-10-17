@@ -1,6 +1,7 @@
 DOCKER_NS ?= github.com/Ning-Qing
+PKG_NS ?= github.com/NingQing
 PKG_NAME ?= temple
-PKG_VERSION ?= 1.13
+PKG_VERSION ?= 1.0.0
 GO_VERSION ?= 1.17.13
 ALPINE_VERSION ?= 3.16
 SUPPORTED_PLATFORMS = linux/arm64,linux/amd64
@@ -28,7 +29,9 @@ endif
 build:
 	@echo "Building $(PKG_NAME)..."
 	@go mod tidy && go build -o ./build/$(PKG_NAME) \
-		-ldflags "-X main.Version=$(PKG_VERSION)" .
+		-ldflags "-X 'main.application=$(PKG_NAME)' \
+				-X 'main.version=$(PKG_VERSION)'" \
+		. 
 	@echo "see ./build/$(PKG_NAME)"
 	
 run:

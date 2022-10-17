@@ -1,6 +1,8 @@
 package config
 
 import (
+	"sync"
+
 	"github.com/Ning-Qing/temple/logger"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -8,19 +10,13 @@ import (
 
 var log = logger.NewLogger("config", logger.DebugLevel)
 
-var (
-	DefaultHost = ""
-	DefaultPort = 8080
-	DefaultMode = "debug"
-)
-
-func InitConfig(path string) {
+func InitConfig(path string) *Settings {
 	settings := &Settings{}
+	settings.lock = new(sync.RWMutex)
 	// 配置读取文件
 	loadLocalConfigs(path, settings)
 	log.Debugf("update settings: %s", settings.String())
-	GlobalSettings = settings
-
+	return settings
 }
 
 func loadLocalConfigs(path string, settings *Settings) {
@@ -29,11 +25,16 @@ func loadLocalConfigs(path string, settings *Settings) {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Errorf("load local config file %s faild: %s", path, err.Error())
 	}
+	settings.lock.Lock()
+	defer settings.lock.Unlock()
 	if err := viper.Unmarshal(settings); err != nil {
 		log.Errorf("unmarshal global settings faild: %s", err.Error())
 	}
+
 	viper.WatchConfig()
 	viper.OnConfigChange(func(in fsnotify.Event) {
+		settings.lock.Lock()
+		defer settings.lock.Unlock()
 		if err := viper.Unmarshal(settings); err != nil {
 			log.Errorf("unmarshal global settings faild: %s", err.Error())
 		}

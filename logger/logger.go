@@ -13,6 +13,7 @@ const (
 	InfoFalg  = "info"
 	WarnFalg  = "warn"
 	ErrorFalg = "error"
+	FatalFalg = "fatal"
 	PaincFalg = "painc"
 )
 
@@ -23,6 +24,7 @@ const (
 	InfoLevel
 	WarnLevel
 	ErrorLevel
+	FatalLevel
 	PaincLevel
 )
 
@@ -36,6 +38,8 @@ func NewLeve(flag LevelFalg) Level {
 		return WarnLevel
 	case ErrorFalg:
 		return ErrorLevel
+	case FatalFalg:
+		return FatalLevel
 	case PaincFalg:
 		return PaincLevel
 	default:
@@ -104,6 +108,18 @@ func (l *Logger) Error(v ...interface{}) {
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	if ErrorLevel.Enable(l.level) {
 		l.logger.Printf("[Error] %s\n", fmt.Sprintf(format, v...))
+	}
+}
+
+func (l *Logger) Fatal(v ...interface{}) {
+	if FatalLevel.Enable(l.level) {
+		l.logger.Panicln("[Fatal] ", v)
+	}
+}
+
+func (l *Logger) Fatalf(format string, v ...interface{}) {
+	if FatalLevel.Enable(l.level) {
+		l.logger.Panicf("[Fatal] %s\n", fmt.Sprintf(format, v...))
 	}
 }
 
